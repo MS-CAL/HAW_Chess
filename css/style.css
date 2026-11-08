@@ -91,23 +91,32 @@ body {
 .square.light .coord { color: var(--dark); }
 .square.dark  .coord { color: var(--light); }
 
-/* ---------- Figuren ---------- */
+/* ---------- Figuren (SVG-Grafiken aus js/pieces.js) ---------- */
 
-.piece {
+.piece-svg {
   position: relative;
   z-index: 1;
-  font-size: calc(var(--square) * 0.8);
-  line-height: 1;
+  width: 90%;
+  height: 90%;
+  overflow: visible;
   pointer-events: none;
+  filter: drop-shadow(0 2px 1.5px rgba(0, 0, 0, 0.4));
 }
-.piece.w {
-  color: #fff;
-  text-shadow: 0 0 2px #000, 0 0 1px #000, 0 1px 2px #000;
+.piece-svg .body {
+  stroke-width: 2.2;
+  stroke-linejoin: round;
 }
-.piece.b {
-  color: #111;
-  text-shadow: 0 0 2px #fff6, 0 1px 1px #fff4;
+.piece-svg .detail {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
+.piece-svg.w .body   { fill: url(#piece-light); stroke: #3b2f22; }
+.piece-svg.w .detail { stroke: #3b2f22; opacity: 0.55; }
+.piece-svg.w .eye    { fill: #3b2f22; }
+.piece-svg.b .body   { fill: url(#piece-dark); stroke: #0b0908; }
+.piece-svg.b .detail { stroke: #d8cab2; opacity: 0.55; }
+.piece-svg.b .eye    { fill: #d8cab2; }
 
 /* ---------- Seitenleiste ---------- */
 
@@ -168,9 +177,8 @@ button:hover { background: #95c95d; }
 .player.active { border-color: #81b64c; }
 
 .player-head { display: flex; align-items: center; gap: 8px; }
-.player-icon { font-size: 1.4rem; line-height: 1; }
-.player-icon.w { color: #fff; text-shadow: 0 0 1px #000; }
-.player-icon.b { color: #111; text-shadow: 0 0 1px #fff; }
+.player-icon { width: 28px; height: 28px; display: flex; }
+.player-icon .piece-svg { width: 100%; height: 100%; filter: none; }
 .player-name { font-weight: 600; flex: 1; }
 
 .clock {
@@ -255,6 +263,9 @@ button:disabled { opacity: 0.4; cursor: default; }
 
 .promotion-choices { display: flex; gap: 8px; }
 .promotion-choices button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--light);
   width: var(--square);
   height: var(--square);

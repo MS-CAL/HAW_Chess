@@ -7,6 +7,22 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Farbverläufe für die Figuren (werden in css/style.css verwendet) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="piece-light" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="#ffffff"/>
+        <stop offset="0.45" stop-color="#f4ecdc"/>
+        <stop offset="1" stop-color="#cdb994"/>
+      </linearGradient>
+      <linearGradient id="piece-dark" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="#76695f"/>
+        <stop offset="0.4" stop-color="#3b332e"/>
+        <stop offset="1" stop-color="#141110"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
   <main class="layout">
     <section class="board-area">
       <div id="board" class="board" aria-label="Schachbrett"></div>
@@ -18,7 +34,7 @@
       <div id="players" class="players">
         <div class="player" data-color="b">
           <div class="player-head">
-            <span class="player-icon b">♚</span>
+            <span class="player-icon" data-piece="k" data-color="b"></span>
             <span class="player-name">Schwarz</span>
             <span class="clock" hidden>--:--</span>
           </div>
@@ -28,7 +44,7 @@
         </div>
         <div class="player" data-color="w">
           <div class="player-head">
-            <span class="player-icon w">♚</span>
+            <span class="player-icon" data-piece="k" data-color="w"></span>
             <span class="player-name">Weiß</span>
             <span class="clock" hidden>--:--</span>
           </div>
@@ -106,6 +122,7 @@
   </div>
 
   <script src="js/chess.js"></script>
+  <script src="js/pieces.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/main.js"></script>
 </body>

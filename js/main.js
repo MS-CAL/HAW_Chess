@@ -5,9 +5,6 @@
  * Schachuhr, Remis und Aufgeben. Die Regeln stecken in chess.js, der Computergegner in engine.js.
  */
 
-// Gefüllte Schachsymbole für beide Farben; die Farbe kommt aus dem CSS.
-// ︎ verhindert, dass manche Systeme die Bauern als bunte Emojis darstellen.
-const GLYPHS = { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟︎' };
 const NAMES = { w: 'Weiß', b: 'Schwarz' };
 const COLORS = ['w', 'b'];
 const MIN_AI_DELAY = 400;   // ms – damit man die Computerzüge mitverfolgen kann
@@ -236,12 +233,7 @@ function renderBoard() {
       if (row === 7) sq.appendChild(coord('file', 'abcdefgh'[c]));
 
       const piece = game.pieceAt(r, c);
-      if (piece) {
-        const p = document.createElement('span');
-        p.className = 'piece ' + piece.color;
-        p.textContent = GLYPHS[piece.type];
-        sq.appendChild(p);
-      }
+      if (piece) sq.insertAdjacentHTML('beforeend', pieceSvg(piece.type, piece.color));
       boardEl.appendChild(sq);
     }
   }
@@ -356,7 +348,7 @@ function askPromotion(color) {
     for (const type of ['q', 'r', 'b', 'n']) {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.innerHTML = `<span class="piece ${color}">${GLYPHS[type]}</span>`;
+      btn.innerHTML = pieceSvg(type, color);
       btn.addEventListener('click', () => {
         $('promotion').hidden = true;
         resolve(type);
@@ -500,6 +492,10 @@ $('setup-cancel').addEventListener('click', () => {
 });
 
 $('new-game').addEventListener('click', () => openSetup(true));
+
+document.querySelectorAll('[data-piece]').forEach((el) => {
+  el.innerHTML = pieceSvg(el.dataset.piece, el.dataset.color);
+});
 
 render();
 openSetup(false);

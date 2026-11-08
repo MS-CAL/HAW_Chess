@@ -35,6 +35,7 @@ Anschließend <http://localhost:8000> öffnen.
 |---|---|
 | `index.html` | Seitenstruktur und Dialoge |
 | `css/style.css` | Aussehen |
+| `js/pieces.js` | Eigene Figurengrafiken (SVG) |
 | `js/chess.js` | Spielregeln, unabhängig von der Darstellung |
 | `js/engine.js` | Computergegner (Alpha-Beta-Suche mit Stellungsbewertung) |
 | `js/engine-worker.js` | Startet den Computergegner in einem eigenen Thread |
