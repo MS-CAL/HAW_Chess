@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HAW Schach</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="layout">
+    <section class="board-area">
+      <div id="board" class="board" aria-label="Schachbrett"></div>
+    </section>
+
+    <aside class="panel">
+      <h1>HAW Schach</h1>
+      <p id="status" class="status">Weiß ist am Zug</p>
+      <button id="new-game" type="button">Neues Spiel</button>
+      <h2>Züge</h2>
+      <ol id="moves" class="moves"></ol>
+    </aside>
+  </main>
+
+  <div id="promotion" class="promotion" hidden>
+    <div class="promotion-box">
+      <p>Bauer umwandeln in:</p>
+      <div id="promotion-choices" class="promotion-choices"></div>
+    </div>
+  </div>
+
+  <script src="js/chess.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
