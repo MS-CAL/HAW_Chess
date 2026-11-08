@@ -14,21 +14,99 @@
 
     <aside class="panel">
       <h1>HAW Schach</h1>
+
+      <div id="players" class="players">
+        <div class="player" data-color="b">
+          <div class="player-head">
+            <span class="player-icon b">♚</span>
+            <span class="player-name">Schwarz</span>
+            <span class="clock" hidden>--:--</span>
+          </div>
+          <label class="player-control">Gespielt von
+            <select class="player-select"></select>
+          </label>
+        </div>
+        <div class="player" data-color="w">
+          <div class="player-head">
+            <span class="player-icon w">♚</span>
+            <span class="player-name">Weiß</span>
+            <span class="clock" hidden>--:--</span>
+          </div>
+          <label class="player-control">Gespielt von
+            <select class="player-select"></select>
+          </label>
+        </div>
+      </div>
+
       <p id="status" class="status">Weiß ist am Zug</p>
-      <button id="new-game" type="button">Neues Spiel</button>
+
+      <div class="actions">
+        <button id="offer-draw" type="button" class="secondary">Remis anbieten</button>
+        <button id="resign" type="button" class="secondary">Aufgeben</button>
+        <button id="flip" type="button" class="secondary">Brett drehen</button>
+        <button id="new-game" type="button">Neues Spiel</button>
+      </div>
+
       <h2>Züge</h2>
       <ol id="moves" class="moves"></ol>
     </aside>
   </main>
 
-  <div id="promotion" class="promotion" hidden>
-    <div class="promotion-box">
+  <!-- Startdialog: Spieler und Bedenkzeit wählen -->
+  <div id="setup" class="modal" hidden>
+    <form id="setup-form" class="modal-box setup">
+      <h2>Neues Spiel</h2>
+      <label>Weiß
+        <select name="w" class="player-select"></select>
+      </label>
+      <label>Schwarz
+        <select name="b" class="player-select"></select>
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" name="useClock"> Mit Bedenkzeit (Schachuhr)
+      </label>
+      <fieldset id="clock-settings" class="clock-settings" disabled>
+        <div class="presets">
+          <button type="button" data-preset="3+2">3 + 2</button>
+          <button type="button" data-preset="5+0">5 + 0</button>
+          <button type="button" data-preset="10+0">10 + 0</button>
+          <button type="button" data-preset="15+10">15 + 10</button>
+          <button type="button" data-preset="30+0">30 + 0</button>
+        </div>
+        <label>Minuten pro Spieler
+          <input type="number" name="minutes" value="10" min="1" max="180">
+        </label>
+        <label>Zeitgutschrift pro Zug (Sekunden)
+          <input type="number" name="increment" value="0" min="0" max="60">
+        </label>
+      </fieldset>
+
+      <div class="modal-buttons">
+        <button type="button" id="setup-cancel" class="secondary">Abbrechen</button>
+        <button type="submit">Spiel starten</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Bauernumwandlung -->
+  <div id="promotion" class="modal" hidden>
+    <div class="modal-box">
       <p>Bauer umwandeln in:</p>
       <div id="promotion-choices" class="promotion-choices"></div>
     </div>
   </div>
 
+  <!-- Allgemeine Rückfrage (Remis, Aufgeben, …) -->
+  <div id="dialog" class="modal" hidden>
+    <div class="modal-box">
+      <p id="dialog-text"></p>
+      <div id="dialog-buttons" class="modal-buttons"></div>
+    </div>
+  </div>
+
   <script src="js/chess.js"></script>
+  <script src="js/engine.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

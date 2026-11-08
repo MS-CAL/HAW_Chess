@@ -38,7 +38,7 @@ class ChessGame {
 
   /** Lädt eine Stellung im FEN-Format (Standardformat zur Beschreibung von Schachstellungen). */
   load(fen) {
-    const [placement, turn, castling, ep] = fen.trim().split(/\s+/);
+    const [placement, turn, castling, ep, halfmove, fullmove] = fen.trim().split(/\s+/);
     this.board = Array.from({ length: 8 }, () => Array(8).fill(null));
     placement.split('/').forEach((row, r) => {
       let c = 0;
@@ -61,7 +61,49 @@ class ChessGame {
     this.enPassant = ep && ep !== '-'
       ? { r: 8 - Number(ep[1]), c: FILES.indexOf(ep[0]) }
       : null;
+    this.halfmove = Number(halfmove) || 0;  // Halbzüge seit dem letzten Bauernzug oder Schlagen (50-Züge-Regel)
+    this.fullmove = Number(fullmove) || 1;  // Zugnummer
     this.history = [];
+    this.keys = [this.positionKey()];       // alle bisherigen Stellungen (Stellungswiederholung)
+  }
+
+  /** Gibt die aktuelle Stellung im FEN-Format zurück. */
+  fen() {
+    const rows = this.board.map((row) => {
+      let out = '', empty = 0;
+      for (const p of row) {
+        if (!p) { empty++; continue; }
+        if (empty) { out += empty; empty = 0; }
+        out += p.color === 'w' ? p.type.toUpperCase() : p.type;
+      }
+      return out + (empty || '');
+    });
+    const ep = this.enPassant ? squareName(this.enPassant.r, this.enPassant.c) : '-';
+    return `${rows.join('/')} ${this.turn} ${this.castlingString()} ${ep} ${this.halfmove} ${this.fullmove}`;
+  }
+
+  castlingString() {
+    const { w, b } = this.castling;
+    return (w.k ? 'K' : '') + (w.q ? 'Q' : '') + (b.k ? 'k' : '') + (b.q ? 'q' : '') || '-';
+  }
+
+  /**
+   * Eindeutiger Schlüssel einer Stellung für die Wiederholungsregel:
+   * gleiche Figuren, gleiche Seite am Zug, gleiche Rochade- und en-passant-Möglichkeiten.
+   */
+  positionKey() {
+    let key = this.fen().split(' ').slice(0, 3).join(' ');
+    const ep = this.enPassant;
+    if (ep) {
+      // en passant zählt nur, wenn ein Bauer auch tatsächlich schlagen könnte
+      const pawnRow = this.turn === 'w' ? ep.r + 1 : ep.r - 1;
+      const canCapture = [ep.c - 1, ep.c + 1].some((c) => {
+        const p = inBounds(pawnRow, c) && this.board[pawnRow][c];
+        return p && p.type === 'p' && p.color === this.turn;
+      });
+      if (canCapture) key += ' ' + squareName(ep.r, ep.c);
+    }
+    return key;
   }
 
   reset() {
@@ -237,6 +279,18 @@ class ChessGame {
     });
   }
 
+  /** Alle pseudolegalen Züge der Seite am Zug (schneller, wird vom Computergegner genutzt). */
+  allPseudoMoves() {
+    const moves = [];
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = this.board[r][c];
+        if (p && p.color === this.turn) moves.push(...this.pseudoMoves(r, c));
+      }
+    }
+    return moves;
+  }
+
   allLegalMoves() {
     const moves = [];
     for (let r = 0; r < 8; r++) {
@@ -255,6 +309,8 @@ class ChessGame {
       turn: this.turn,
       castling: { w: { ...this.castling.w }, b: { ...this.castling.b } },
       enPassant: this.enPassant,
+      halfmove: this.halfmove,
+      fullmove: this.fullmove,
     };
   }
 
@@ -263,6 +319,8 @@ class ChessGame {
     this.turn = s.turn;
     this.castling = s.castling;
     this.enPassant = s.enPassant;
+    this.halfmove = s.halfmove;
+    this.fullmove = s.fullmove;
   }
 
   /** Führt einen (bereits als legal bekannten) Zug aus. Ohne Prüfung, ohne Historie. */
@@ -296,6 +354,8 @@ class ChessGame {
     }
 
     this.enPassant = m.doublePush ? { r: (from.r + to.r) / 2, c: from.c } : null;
+    this.halfmove = piece.type === 'p' || m.captured ? 0 : this.halfmove + 1;
+    if (color === 'b') this.fullmove++;
     this.turn = opponent(color);
   }
 
@@ -303,6 +363,7 @@ class ChessGame {
   makeMove(m, promotionType = 'q') {
     const san = this.toSan(m, promotionType);
     this.applyMove(m, promotionType);
+    this.keys.push(this.positionKey());
     const status = this.status();
     const suffix = status === 'checkmate' ? '#' : this.inCheck() ? '+' : '';
     const record = { ...m, promotionType: m.promotion ? promotionType : null, san: san + suffix };
@@ -335,13 +396,65 @@ class ChessGame {
     return LETTER[m.piece.type] + disamb + capture + target;
   }
 
-  /** 'checkmate' (Matt), 'stalemate' (Patt), 'check' (Schach) oder 'playing'. */
+  /**
+   * Ungenügendes Material: Keine Seite kann den Gegner mattsetzen.
+   * (König gegen König, König+Läufer, König+Springer, nur Läufer auf gleichfarbigen Feldern)
+   */
+  isInsufficientMaterial() {
+    const minors = [];
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = this.board[r][c];
+        if (!p || p.type === 'k') continue;
+        if (p.type === 'p' || p.type === 'r' || p.type === 'q') return false;
+        minors.push({ type: p.type, squareColor: (r + c) % 2 });
+      }
+    }
+    if (minors.length <= 1) return true;
+    return minors.every((m) => m.type === 'b' && m.squareColor === minors[0].squareColor);
+  }
+
+  /**
+   * Kann `color` überhaupt noch mattsetzen? Wichtig bei abgelaufener Zeit:
+   * Hat der Gegner nur noch den König (oder nur eine Leichtfigur gegen einen nackten König), ist es Remis.
+   */
+  canStillMate(color) {
+    const count = { w: [], b: [] };
+    for (const row of this.board) {
+      for (const p of row) if (p && p.type !== 'k') count[p.color].push(p.type);
+    }
+    const own = count[color], other = count[opponent(color)];
+    if (own.length === 0) return false;
+    if (own.length === 1 && (own[0] === 'n' || own[0] === 'b') && other.length === 0) return false;
+    return true;
+  }
+
+  /** Wie oft ist die aktuelle Stellung bereits vorgekommen? */
+  repetitionCount() {
+    const current = this.keys[this.keys.length - 1];
+    return this.keys.filter((k) => k === current).length;
+  }
+
+  /**
+   * Spielstand:
+   *   'checkmate'    Schachmatt
+   *   'stalemate'    Patt (Remis)
+   *   'insufficient' ungenügendes Material (Remis)
+   *   'fifty'        50 Züge ohne Bauernzug oder Schlagen (Remis)
+   *   'repetition'   dreimal dieselbe Stellung (Remis)
+   *   'check'        Schach, Partie läuft
+   *   'playing'      Partie läuft
+   */
   status() {
     const hasMoves = this.allLegalMoves().length > 0;
     const check = this.inCheck();
     if (!hasMoves) return check ? 'checkmate' : 'stalemate';
+    if (this.isInsufficientMaterial()) return 'insufficient';
+    if (this.halfmove >= 100) return 'fifty';
+    if (this.repetitionCount() >= 3) return 'repetition';
     return check ? 'check' : 'playing';
   }
+
 }
 
 // Ermöglicht automatische Tests mit Node.js; im Browser ist ChessGame einfach global verfügbar.

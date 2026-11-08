@@ -112,7 +112,7 @@ body {
 /* ---------- Seitenleiste ---------- */
 
 .panel {
-  width: 260px;
+  width: 300px;
   background: var(--panel);
   border-radius: 6px;
   padding: 16px 20px;
@@ -145,17 +145,75 @@ button:hover { background: #95c95d; }
 
 .moves {
   margin: 0;
+  flex: 1;
   padding-left: 2.2em;
   overflow-y: auto;
-  max-height: 50vh;
+  max-height: 30vh;
   font-family: ui-monospace, Menlo, Consolas, monospace;
   line-height: 1.6;
 }
 .moves li span { display: inline-block; min-width: 5.5em; }
 
-/* ---------- Bauernumwandlung ---------- */
+/* ---------- Spieler und Uhren ---------- */
 
-.promotion {
+.players { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.players.flipped { flex-direction: column-reverse; }
+
+.player {
+  background: #1e1c1a;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+.player.active { border-color: #81b64c; }
+
+.player-head { display: flex; align-items: center; gap: 8px; }
+.player-icon { font-size: 1.4rem; line-height: 1; }
+.player-icon.w { color: #fff; text-shadow: 0 0 1px #000; }
+.player-icon.b { color: #111; text-shadow: 0 0 1px #fff; }
+.player-name { font-weight: 600; flex: 1; }
+
+.clock {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 1.3rem;
+  font-weight: 700;
+  background: #3a3835;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.player.active .clock { background: #e8e6e3; color: #111; }
+.clock.low { background: #c0392b !important; color: #fff !important; }
+
+.player-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #bababa;
+  white-space: nowrap;
+}
+
+select, input[type="number"] {
+  font: inherit;
+  background: #3a3835;
+  color: var(--text);
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+.player-control select { flex: 1; }
+
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.actions #flip,
+.actions #new-game { grid-column: span 2; }
+button.secondary { background: #3a3835; }
+button.secondary:hover { background: #4a4845; }
+button:disabled { opacity: 0.4; cursor: default; }
+
+/* ---------- Dialoge ---------- */
+
+.modal {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
@@ -164,13 +222,37 @@ button:hover { background: #95c95d; }
   justify-content: center;
   z-index: 10;
 }
-.promotion[hidden] { display: none; }
-.promotion-box {
+.modal[hidden] { display: none; }
+.modal-box {
   background: var(--panel);
   padding: 16px 24px;
   border-radius: 8px;
   text-align: center;
+  max-width: 90vw;
 }
+.modal-buttons { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+
+.setup { text-align: left; display: flex; flex-direction: column; gap: 10px; min-width: 300px; }
+.setup h2 { margin: 0 0 4px; }
+.setup > label { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.setup .checkbox { justify-content: flex-start; }
+.clock-settings {
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.clock-settings:disabled { opacity: 0.4; }
+.clock-settings label { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.clock-settings input { width: 5em; }
+.presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.presets button { padding: 4px 8px; background: #3a3835; }
+.setup .modal-buttons { justify-content: flex-end; }
+
+/* ---------- Bauernumwandlung ---------- */
+
 .promotion-choices { display: flex; gap: 8px; }
 .promotion-choices button {
   background: var(--light);
