@@ -48,3 +48,9 @@ Anschließend <http://localhost:8000> öffnen.
 node tests/perft.test.js
 node tests/engine.test.js
 ```
+
+## Figurendesign
+
+Gegenüberstellung der bisherigen Schriftzeichen (links) und der eigenen SVG-Figuren (rechts):
+
+![Vergleich altes und neues Figurendesign](docs/figuren-vergleich.png)
