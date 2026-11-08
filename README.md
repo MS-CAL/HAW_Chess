@@ -2,7 +2,13 @@
 
 Ein Schachspiel als Webseite, entwickelt im Dialog mit einer KI. Es ist ein Lehrexperiment, das zeigt, wie man gemeinsam mit KI Software baut.
 
-## Starten
+## Online spielen
+
+**<https://ms-cal.github.io/HAW_Chess/>**
+
+Jeder Push auf `main` führt die Tests aus und veröffentlicht die Seite automatisch über GitHub Pages (`.github/workflows/pages.yml`).
+
+## Lokal starten
 
 **Einfach:** `index.html` im Browser öffnen.
 
